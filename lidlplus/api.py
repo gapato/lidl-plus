@@ -128,7 +128,19 @@ class LidlPlusApi:
             "Content-Type": "application/x-www-form-urlencoded",
         }
         kwargs = {"headers": headers, "data": payload, "timeout": self._TIMEOUT}
-        response = requests.post(f"{self._AUTH_API}/connect/token", **kwargs).json()
+        tries = 0
+        while True:
+            tries += 1
+            try:
+                #print("try: ", tries)
+                response = requests.post(f"{self._AUTH_API}/connect/token", **kwargs).json()
+                break
+            except Exception as e:
+                print("failed")
+                if tries <= 5:
+                    continue
+                else:
+                    raise e
         self._expires = datetime.utcnow() + timedelta(seconds=response["expires_in"])
         self._token = response["access_token"]
         self._refresh_token = response["refresh_token"]

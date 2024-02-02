@@ -137,16 +137,16 @@ def activate_coupons(args):
     lidl_plus = lidl_plus_login(args)
     coupons = lidl_plus.coupons()
     if not args.get("all"):
-        print(json.dumps(coupons, indent=4))
+        print(json.dumps(coupons))
         return
     i = 0
     for section in coupons.get("sections", {}):
         for coupon in section.get("coupons", {}):
             if coupon["isActivated"]:
                 continue
-            if datetime.fromisoformat(coupon["startValidityDate"]) > datetime.now(timezone.utc):
+            if datetime.fromisoformat(coupon["startValidityDate"][:19] + "+00:00") > datetime.now(timezone.utc):
                 continue
-            if datetime.fromisoformat(coupon["endValidityDate"]) < datetime.now(timezone.utc):
+            if datetime.fromisoformat(coupon["endValidityDate"][:19] + "+00:00") < datetime.now(timezone.utc):
                 continue
             print("activating coupon: ", coupon["title"])
             lidl_plus.activate_coupon(coupon["id"])
