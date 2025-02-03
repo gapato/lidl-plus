@@ -157,9 +157,9 @@ def activate_coupons(args):
             if coupon["isActivated"]:
                 continue
             validity = coupon.get("validity", {})
-            if datetime.fromisoformat(validity["start"]) > datetime.now(timezone.utc):
+            if datetime.fromisoformat(validity["start"][:19] + "+00:00") > datetime.now(timezone.utc):
                 continue
-            if datetime.fromisoformat(validity["end"]) < datetime.now(timezone.utc):
+            if datetime.fromisoformat(validity["end"][:19] + "+00:00") < datetime.now(timezone.utc):
                 continue
             print("activating coupon v1: ", coupon["title"])
             lidl_plus.activate_coupon_promotion_v1(coupon["promotionId"])
