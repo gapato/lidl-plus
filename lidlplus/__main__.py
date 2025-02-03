@@ -131,6 +131,20 @@ def print_tickets(args):
         tickets = lidl_plus.ticket(lidl_plus.tickets()[0]["id"])
     print(json.dumps(tickets, indent=4))
 
+def activate_coupon(lidl_plus, coupon):
+    if coupon["isActivated"]:
+        return False
+    if datetime.fromisoformat(coupon["startValidityDate"]) > datetime.now(timezone.utc):
+        return False
+    if datetime.fromisoformat(coupon["endValidityDate"]) < datetime.now(timezone.utc):
+        return False
+    if coupon.get("from_v1", False):
+        print("activating v1 coupon: ", coupon["title"])
+        lidl_plus.activate_coupon_promotion_v1(coupon["id"])
+    else:
+        print("activating v2 coupon: ", coupon["title"])
+        lidl_plus.activate_coupon(coupon["id"])
+    return True
 
 def activate_coupons(args):
     """Activate all available coupons"""
@@ -140,32 +154,11 @@ def activate_coupons(args):
         print(json.dumps(coupons, indent=4))
         return
     i = 0
-    for section in coupons["v2"].get("sections", {}):
+    for section in coupons.get("sections", {}):
         for coupon in section.get("coupons", {}):
-            if coupon["isActivated"]:
-                continue
-            if datetime.fromisoformat(coupon["startValidityDate"]) > datetime.now(timezone.utc):
-                continue
-            if datetime.fromisoformat(coupon["endValidityDate"]) < datetime.now(timezone.utc):
-                continue
-            print("activating coupon: ", coupon["title"])
-            lidl_plus.activate_coupon(coupon["id"])
-            i += 1
-    # Some coupons are only available through V1 API
-    for section in coupons["v1"].get("sections", {}):
-        for coupon in section.get("promotions", {}):
-            if coupon["isActivated"]:
-                continue
-            validity = coupon.get("validity", {})
-            if datetime.fromisoformat(validity["start"][:19] + "+00:00") > datetime.now(timezone.utc):
-                continue
-            if datetime.fromisoformat(validity["end"][:19] + "+00:00") < datetime.now(timezone.utc):
-                continue
-            print("activating coupon v1: ", coupon["title"])
-            lidl_plus.activate_coupon_promotion_v1(coupon["promotionId"])
-            i += 1
+            if activate_coupon(lidl_plus, coupon):
+                i += 1
     print(f"Activated {i} coupons")
-
 
 def main():
     """argument commands"""

@@ -34,6 +34,20 @@ except ImportError:
     pass
 
 
+def coupon_v1_to_v2(v1_coupon):
+    v2_coupon = v1_coupon.copy()
+    v2_coupon["from_v1"] = True
+
+    validity = v2_coupon.get("validity", {})
+    v2_coupon["startValidityDate"] = validity["start"]
+    v2_coupon["endValidityDate"] = validity["end"]
+    v2_coupon["id"] = v1_coupon["promotionId"]
+
+    v2_coupon.pop("validity")
+    v2_coupon.pop("promotionId")
+
+    return v2_coupon
+
 class LidlPlusApi:
     """Lidl Plus api connector"""
 
@@ -290,7 +304,10 @@ class LidlPlusApi:
         r = requests.get(url, **kwargs)
         v2_coupons = r.json()
         v1_coupons = self.coupon_promotions_v1()
-        return {"v1":v1_coupons, "v2":v2_coupons}
+        for coupon in v1_coupons["sections"][0]["promotions"]:
+            v2_coupon = coupon_v1_to_v2(coupon)
+            v2_coupons["sections"][1]["coupons"].append(v2_coupon)
+        return v2_coupons
 
     def activate_coupon(self, coupon_id):
         """Activate single coupon by id"""
