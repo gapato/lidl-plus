@@ -140,7 +140,7 @@ def activate_coupons(args):
         print(json.dumps(coupons, indent=4))
         return
     i = 0
-    for section in coupons.get("sections", {}):
+    for section in coupons["v2"].get("sections", {}):
         for coupon in section.get("coupons", {}):
             if coupon["isActivated"]:
                 continue
@@ -152,8 +152,7 @@ def activate_coupons(args):
             lidl_plus.activate_coupon(coupon["id"])
             i += 1
     # Some coupons are only available through V1 API
-    coupons = lidl_plus.coupon_promotions_v1()
-    for section in coupons.get("sections", {}):
+    for section in coupons["v1"].get("sections", {}):
         for coupon in section.get("promotions", {}):
             if coupon["isActivated"]:
                 continue
