@@ -134,9 +134,9 @@ def print_tickets(args):
 def activate_coupon(lidl_plus, coupon):
     if coupon["isActivated"]:
         return False
-    if datetime.fromisoformat(coupon["startValidityDate"]) > datetime.now(timezone.utc):
+    if datetime.fromisoformat(coupon["startValidityDate"][:19] + "+00:00") > datetime.now(timezone.utc):
         return False
-    if datetime.fromisoformat(coupon["endValidityDate"]) < datetime.now(timezone.utc):
+    if datetime.fromisoformat(coupon["endValidityDate"][:19] + "+00:00") < datetime.now(timezone.utc):
         return False
     if coupon.get("from_v1", False):
         print("activating v1 coupon: ", coupon["title"])
